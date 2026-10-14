@@ -1,43 +1,37 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Dependencias
+**/node_modules/
+**/vendor/
 
-# dependencies
-node_modules/
+# Configuración privada
+**/.env
+**/.env.*
+!**/.env.example
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# Expo y compilaciones
+**/.expo/
+**/dist/
+**/web-build/
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Registros
+**/*.log
 
-# Metro
-.metro-health-check*
+# Laravel: archivos generados
+servidor-restaurante/public/build/
+servidor-restaurante/public/hot
+servidor-restaurante/public/storage
+servidor-restaurante/bootstrap/cache/*.php
+servidor-restaurante/storage/*.key
+servidor-restaurante/storage/framework/cache/data/
+servidor-restaurante/storage/framework/sessions/*
+servidor-restaurante/storage/framework/views/*
+servidor-restaurante/storage/logs/*
+servidor-restaurante/.phpunit.result.cache
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Bases de datos locales y respaldos
+**/*.sqlite
+**/*.sqlite-*
+**/*.sql
 
-# macOS
+# Sistema operativo
 .DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-example
-
-# generated native folders
-/ios
-/android
+Thumbs.db
