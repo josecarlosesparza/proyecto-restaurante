@@ -1,9 +1,10 @@
-import { Link } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from 'react-native';
 
 import { apiRequest } from '@/services/api';
@@ -31,6 +33,7 @@ type LoginResponse = {
 export default function LoginScreen() {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
 
@@ -56,6 +59,7 @@ export default function LoginScreen() {
       await SecureStore.setItemAsync('auth_token', respuesta.token);
 
       setPassword('');
+      setMostrarPassword(false);
       setUsuario(respuesta.user);
     } catch (error) {
       Alert.alert(
@@ -85,9 +89,11 @@ export default function LoginScreen() {
       }
 
       await SecureStore.deleteItemAsync('auth_token');
+
       setUsuario(null);
       setCorreo('');
       setPassword('');
+      setMostrarPassword(false);
     } catch (error) {
       Alert.alert(
         'No se pudo cerrar sesión',
@@ -100,107 +106,179 @@ export default function LoginScreen() {
     }
   }
 
-  if (usuario) {
-    return (
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <Text style={styles.brand}>Pedidos Restaurante</Text>
-        <Text style={styles.title}>¡Bienvenido, {usuario.name}!</Text>
-
-        <Text style={styles.description}>
-          Has iniciado sesión correctamente.
-        </Text>
-
-        <Text style={styles.label}>Tu correo</Text>
-        <Text style={styles.description}>{usuario.email}</Text>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: enviando, busy: enviando }}
-          disabled={enviando}
-          style={({ pressed }) => [
-            styles.button,
-            (pressed || enviando) && { opacity: 0.7 },
-          ]}
-          onPress={cerrarSesion}
-        >
-          {enviando ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Cerrar sesión</Text>
-          )}
-        </Pressable>
-      </ScrollView>
-    );
-  }
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <Stack.Screen options={{ title: 'Acceso', headerShown: false }} />
+
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
-        <Text style={styles.brand}>Pedidos Restaurante</Text>
-        <Text style={styles.title}>Iniciar sesión</Text>
+        <View style={styles.page}>
+          <View style={styles.brand}>
+            <View style={styles.brandIcon}>
+              <View style={styles.bunTop} />
+              <View style={styles.filling} />
+              <View style={styles.bunBottom} />
+            </View>
 
-        <Text style={styles.description}>
-          Ingresa con tu cuenta para continuar.
-        </Text>
+            <Text style={styles.brandText}>Tokis Burger</Text>
+          </View>
 
-        <Text style={styles.label}>Correo electrónico</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="ejemplo@correo.com"
-          placeholderTextColor="#777"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="email"
-          maxLength={255}
-          editable={!enviando}
-          value={correo}
-          onChangeText={setCorreo}
-        />
+          <Image
+            source={require('../../assets/images/login-comida.png')}
+            style={styles.hero}
+            resizeMode="contain"
+            accessible={false}
+          />
 
-        <Text style={styles.label}>Contraseña</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Escribe tu contraseña"
-          placeholderTextColor="#777"
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-          maxLength={128}
-          editable={!enviando}
-          value={password}
-          onChangeText={setPassword}
-        />
+          {usuario ? (
+            <View>
+              <Text style={styles.title}>
+                ¡Bienvenido, {usuario.name}!
+              </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: enviando, busy: enviando }}
-          disabled={enviando}
-          style={({ pressed }) => [
-            styles.button,
-            (pressed || enviando) && { opacity: 0.7 },
-          ]}
-          onPress={iniciarSesion}
-        >
-          {enviando ? (
-            <ActivityIndicator color="#FFFFFF" />
+              <Text style={styles.subtitle}>
+                Has iniciado sesión correctamente.
+              </Text>
+
+              <View style={styles.profile}>
+                <Text style={styles.label}>Tu correo</Text>
+                <Text style={styles.profileEmail}>{usuario.email}</Text>
+              </View>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{
+                  disabled: enviando,
+                  busy: enviando,
+                }}
+                disabled={enviando}
+                onPress={cerrarSesion}
+                style={({ pressed }) => [
+                  styles.button,
+                  (pressed || enviando) && styles.buttonPressed,
+                ]}
+              >
+                {enviando ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Cerrar sesión</Text>
+                )}
+              </Pressable>
+            </View>
           ) : (
-            <Text style={styles.buttonText}>Ingresar</Text>
-          )}
-        </Pressable>
+            <View>
+              <Text style={styles.title}>¡Qué gusto verte!</Text>
 
-        <Link href="/registro" style={styles.link}>
-          ¿No tienes cuenta? Regístrate
-        </Link>
+              <Text style={styles.subtitle}>
+                Inicia sesión para continuar.
+              </Text>
+
+              <Text style={styles.label}>Correo electrónico</Text>
+
+              <View style={styles.inputContainer}>
+                <View style={styles.mailIcon} accessible={false}>
+                  <View style={styles.mailFlap} />
+                </View>
+
+                <TextInput
+                  accessibilityLabel="Correo electrónico"
+                  style={styles.input}
+                  placeholder="ejemplo@correo.com"
+                  placeholderTextColor="#92959B"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  maxLength={255}
+                  editable={!enviando}
+                  value={correo}
+                  onChangeText={setCorreo}
+                />
+              </View>
+
+              <Text style={styles.label}>Contraseña</Text>
+
+              <View style={styles.inputContainer}>
+                <View style={styles.lockIcon} accessible={false}>
+                  <View style={styles.lockArc} />
+                  <View style={styles.lockBody}>
+                    <View style={styles.lockDot} />
+                  </View>
+                </View>
+
+                <TextInput
+                  accessibilityLabel="Contraseña"
+                  style={styles.input}
+                  placeholder="Escribe tu contraseña"
+                  placeholderTextColor="#92959B"
+                  secureTextEntry={!mostrarPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={128}
+                  editable={!enviando}
+                  value={password}
+                  onChangeText={setPassword}
+                  returnKeyType="go"
+                  onSubmitEditing={iniciarSesion}
+                />
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    mostrarPassword
+                      ? 'Ocultar contraseña'
+                      : 'Mostrar contraseña'
+                  }
+                  disabled={enviando}
+                  onPress={() => setMostrarPassword(!mostrarPassword)}
+                  style={styles.eyeButton}
+                >
+                  <View style={styles.eye}>
+                    <View style={styles.pupil} />
+                  </View>
+
+                  {mostrarPassword && <View style={styles.eyeSlash} />}
+                </Pressable>
+              </View>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{
+                  disabled: enviando,
+                  busy: enviando,
+                }}
+                disabled={enviando}
+                onPress={iniciarSesion}
+                style={({ pressed }) => [
+                  styles.button,
+                  (pressed || enviando) && styles.buttonPressed,
+                ]}
+              >
+                {enviando ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Ingresar</Text>
+                )}
+              </Pressable>
+
+              <View style={styles.registerRow}>
+                <Text style={styles.registerText}>
+                  ¿No tienes cuenta?
+                </Text>
+
+                <Link href="/registro" style={styles.registerLink}>
+                  Regístrate
+                </Link>
+              </View>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -213,61 +291,227 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  page: {
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
   },
   brand: {
-    color: '#C2410C',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 24,
-  },
-  title: {
-    color: '#1F2937',
-    fontSize: 30,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  description: {
-    color: '#6B7280',
-    fontSize: 16,
-    marginBottom: 32,
-  },
-  label: {
-    color: '#1F2937',
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    color: '#1F2937',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 20,
   },
-  button: {
-    backgroundColor: '#C2410C',
-    borderRadius: 12,
-    paddingVertical: 16,
+  brandText: {
+    flexShrink: 1,
+    color: '#191919',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  brandIcon: {
+    width: 34,
+    height: 36,
+    justifyContent: 'center',
+    gap: 3,
+  },
+  bunTop: {
+    height: 15,
+    borderWidth: 2,
+    borderColor: '#C2410C',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 3,
+    borderBottomRightRadius: 3,
+  },
+  filling: {
+    height: 5,
+    borderWidth: 2,
+    borderColor: '#C2410C',
+    borderRadius: 3,
+  },
+  bunBottom: {
+    height: 8,
+    borderWidth: 2,
+    borderColor: '#C2410C',
+    borderRadius: 4,
+  },
+  hero: {
+    width: '70%',
+    maxWidth: 240,
+    height: 170,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    color: '#191919',
+    fontSize: 32,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: -0.8,
+    marginBottom: 10,
+  },
+  subtitle: {
+    color: '#686868',
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  label: {
+    color: '#252525',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 9,
+  },
+  inputContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 58,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DEDEDE',
+    borderRadius: 14,
+    paddingLeft: 16,
+    marginBottom: 20,
+  },
+  input: {
+    flex: 1,
+    minWidth: 0,
+    color: '#252525',
+    fontSize: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 17,
+  },
+  mailIcon: {
+    width: 24,
+    height: 18,
+    borderWidth: 2,
+    borderColor: '#85888C',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  mailFlap: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    top: -8,
+    left: 3,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#85888C',
+    transform: [{ rotate: '45deg' }],
+  },
+  lockIcon: {
+    width: 24,
+    height: 25,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  lockArc: {
+    position: 'absolute',
+    top: 0,
+    width: 13,
+    height: 13,
+    borderWidth: 2,
+    borderColor: '#85888C',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  lockBody: {
+    width: 21,
+    height: 17,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#85888C',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockDot: {
+    width: 3,
+    height: 6,
+    backgroundColor: '#85888C',
+    borderRadius: 2,
+  },
+  eyeButton: {
+    width: 48,
+    minHeight: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eye: {
+    width: 24,
+    height: 16,
+    borderWidth: 2,
+    borderColor: '#85888C',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pupil: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#85888C',
+  },
+  eyeSlash: {
+    position: 'absolute',
+    width: 28,
+    height: 2,
+    backgroundColor: '#85888C',
+    transform: [{ rotate: '-40deg' }],
+  },
+  button: {
+    minHeight: 58,
+    backgroundColor: '#C2410C',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
+  },
+  buttonPressed: {
+    opacity: 0.7,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
-  link: {
+  registerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    columnGap: 8,
+    marginTop: 22,
+  },
+  registerText: {
+    color: '#686868',
+    fontSize: 15,
+  },
+  registerLink: {
     color: '#C2410C',
-    textAlign: 'center',
-    marginTop: 24,
+    fontSize: 15,
+    fontWeight: '700',
+    paddingVertical: 12,
+  },
+  profile: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DEDEDE',
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 20,
+  },
+  profileEmail: {
+    color: '#686868',
     fontSize: 16,
-    paddingVertical: 8,
   },
 });
