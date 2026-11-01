@@ -1,5 +1,4 @@
 import { Link, Stack } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,11 +15,17 @@ import {
 } from 'react-native';
 
 import { apiRequest } from '@/services/api';
+import {
+  guardarToken,
+  obtenerToken,
+  eliminarToken,
+} from '@/services/session';
 
 type Usuario = {
   id: number;
   name: string;
   email: string;
+  role: 'admin' | 'customer';
 };
 
 type LoginResponse = {
@@ -29,6 +34,14 @@ type LoginResponse = {
   token_type: string;
   user: Usuario;
 };
+
+function mostrarMensaje(titulo: string, mensaje: string) {
+  if (Platform.OS === 'web') {
+    window.alert(`${titulo}\n\n${mensaje}`);
+  } else {
+    Alert.alert(titulo, mensaje);
+  }
+}
 
 export default function LoginScreen() {
   const [correo, setCorreo] = useState('');
@@ -41,7 +54,10 @@ export default function LoginScreen() {
     if (enviando) return;
 
     if (!correo.trim() || !password) {
-      Alert.alert('Campos incompletos', 'Escribe tu correo y contraseña.');
+      mostrarMensaje(
+        'Campos incompletos',
+        'Escribe tu correo y contraseña.'
+      );
       return;
     }
 
@@ -56,13 +72,13 @@ export default function LoginScreen() {
         },
       });
 
-      await SecureStore.setItemAsync('auth_token', respuesta.token);
+      await guardarToken(respuesta.token);
 
       setPassword('');
       setMostrarPassword(false);
       setUsuario(respuesta.user);
     } catch (error) {
-      Alert.alert(
+      mostrarMensaje(
         'No se pudo iniciar sesión',
         error instanceof Error
           ? error.message
@@ -79,7 +95,7 @@ export default function LoginScreen() {
     setEnviando(true);
 
     try {
-      const token = await SecureStore.getItemAsync('auth_token');
+      const token = await obtenerToken();
 
       if (token) {
         await apiRequest<{ message: string }>('/logout', {
@@ -88,14 +104,14 @@ export default function LoginScreen() {
         });
       }
 
-      await SecureStore.deleteItemAsync('auth_token');
+      await eliminarToken();
 
       setUsuario(null);
       setCorreo('');
       setPassword('');
       setMostrarPassword(false);
     } catch (error) {
-      Alert.alert(
+      mostrarMensaje(
         'No se pudo cerrar sesión',
         error instanceof Error
           ? error.message
@@ -120,7 +136,7 @@ export default function LoginScreen() {
       >
         <View style={styles.page}>
           <View style={styles.brand}>
-            <View style={styles.brandIcon}>
+            <View style={styles.brandIcon} accessible={false}>
               <View style={styles.bunTop} />
               <View style={styles.filling} />
               <View style={styles.bunBottom} />
@@ -149,7 +165,33 @@ export default function LoginScreen() {
               <View style={styles.profile}>
                 <Text style={styles.label}>Tu correo</Text>
                 <Text style={styles.profileEmail}>{usuario.email}</Text>
+
+                <Text style={styles.role}>
+                  {usuario.role === 'admin'
+                    ? 'Administrador'
+                    : 'Cliente'}
+                </Text>
               </View>
+
+              <Link href="/catalogo" style={styles.menuLink}>
+                Explorar el menú
+              </Link>
+
+              <Link href="/mis-pedidos" style={styles.menuLink}>
+                Mis pedidos
+              </Link>
+
+              {usuario.role === 'admin' && (
+                <>
+                  <Link href="/admin-productos" style={styles.menuLink}>
+                    Administrar productos
+                  </Link>
+
+                  <Link href="/admin-pedidos" style={styles.menuLink}>
+                    Administrar pedidos
+                  </Link>
+                </>
+              )}
 
               <Pressable
                 accessibilityRole="button"
@@ -178,6 +220,10 @@ export default function LoginScreen() {
               <Text style={styles.subtitle}>
                 Inicia sesión para continuar.
               </Text>
+
+              <Link href="/catalogo" style={styles.menuLink}>
+                Explorar el menú
+              </Link>
 
               <Text style={styles.label}>Correo electrónico</Text>
 
@@ -236,14 +282,18 @@ export default function LoginScreen() {
                       : 'Mostrar contraseña'
                   }
                   disabled={enviando}
-                  onPress={() => setMostrarPassword(!mostrarPassword)}
+                  onPress={() =>
+                    setMostrarPassword((anterior) => !anterior)
+                  }
                   style={styles.eyeButton}
                 >
                   <View style={styles.eye}>
                     <View style={styles.pupil} />
                   </View>
 
-                  {mostrarPassword && <View style={styles.eyeSlash} />}
+                  {mostrarPassword && (
+                    <View style={styles.eyeSlash} />
+                  )}
                 </Pressable>
               </View>
 
@@ -361,6 +411,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: 'center',
     marginBottom: 30,
+  },
+  menuLink: {
+    color: '#C2410C',
+    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
   },
   label: {
     color: '#252525',
@@ -513,5 +571,11 @@ const styles = StyleSheet.create({
   profileEmail: {
     color: '#686868',
     fontSize: 16,
+  },
+  role: {
+    color: '#C2410C',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 12,
   },
 });

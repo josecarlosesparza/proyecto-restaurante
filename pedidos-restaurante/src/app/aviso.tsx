@@ -262,4 +262,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
   },
+    noticeTitle: {
+    color: '#9A3412',
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
 });

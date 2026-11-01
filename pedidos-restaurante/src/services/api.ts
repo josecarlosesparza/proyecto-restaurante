@@ -1,7 +1,7 @@
-const API_URL = 'http://192.168.1.68:8000/api';
+const API_URL = 'http://192.168.1.71:8000/api';
 
 type ApiOptions = {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PUT';
   body?: Record<string, unknown>;
   token?: string;
 };
