@@ -20,6 +20,8 @@ import {
   obtenerToken,
   eliminarToken,
 } from '@/services/session';
+import ActivarNotificaciones from '@/components/ActivarNotificaciones';
+import { desvincularNotificaciones } from '@/services/notifications';
 
 type Usuario = {
   id: number;
@@ -98,6 +100,10 @@ export default function LoginScreen() {
       const token = await obtenerToken();
 
       if (token) {
+        // Primero desvincular el teléfono usando la sesión vigente.
+        await desvincularNotificaciones(token);
+
+        // Después invalidar la sesión en Laravel.
         await apiRequest<{ message: string }>('/logout', {
           method: 'POST',
           token,
@@ -112,10 +118,10 @@ export default function LoginScreen() {
       setMostrarPassword(false);
     } catch (error) {
       mostrarMensaje(
-        'No se pudo cerrar sesión',
+        'No se pudo completar el cierre de sesión',
         error instanceof Error
           ? error.message
-          : 'Ocurrió un error inesperado.'
+          : 'Ocurrió un error inesperado. Intenta nuevamente.'
       );
     } finally {
       setEnviando(false);
@@ -212,6 +218,7 @@ export default function LoginScreen() {
                   <Text style={styles.buttonText}>Cerrar sesión</Text>
                 )}
               </Pressable>
+              <ActivarNotificaciones />
             </View>
           ) : (
             <View>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "971217208099",
+    "project_id": "tokis-burger-513423",
+    "storage_bucket": "tokis-burger-513423.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:971217208099:android:1e61c1d611300b654b0296",
+        "android_client_info": {
+          "package_name": "com.josecarlosesparza.tokisburger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAb4JX9TDIA-ycZcDUtOK-iWHp2Fvc22SA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

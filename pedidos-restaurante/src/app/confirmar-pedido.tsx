@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '@/context/CartContext';
 import { apiRequest } from '@/services/api';
 import { obtenerToken } from '@/services/session';
+import AddressSearch from '@/components/AddressSearch';
 
 type Pedido = {
   id: number;
@@ -199,6 +200,14 @@ export default function ConfirmarPedidoScreen() {
                   sin cargo de entrega.
                 </Text>
               </View>
+
+              <AddressSearch
+                disabled={enviando}
+                onSelect={(direccionSeleccionada) => {
+                  setDireccion(direccionSeleccionada);
+                  setError('');
+                }}
+              />
 
               <Text style={styles.label}>Dirección de entrega *</Text>
               <TextInput

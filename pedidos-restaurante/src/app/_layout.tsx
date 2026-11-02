@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { CartProvider } from '@/context/CartContext';
+import '@/services/notifications';
 
 SplashScreen.preventAutoHideAsync();
 

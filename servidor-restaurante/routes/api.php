@@ -8,6 +8,8 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\PayPalController;
+use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\DeviceTokenController;
 
 Route::post('/register', [AuthController::class, 'register'])
     ->middleware('throttle:10,1');
@@ -32,6 +34,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{order}/paypal/capture', [
         PayPalController::class,
         'capture',
+    ])->middleware('throttle:10,1');
+
+    Route::post('/addresses/autocomplete', [
+        AddressController::class,
+        'autocomplete',
+    ])->middleware('throttle:30,1');
+
+    Route::post('/addresses/details', [
+        AddressController::class,
+        'details',
     ])->middleware('throttle:10,1');
 });
 
@@ -58,3 +70,11 @@ Route::prefix('admin')
             'updateStatus',
         ]);
     });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/device-tokens', [DeviceTokenController::class, 'store'])
+        ->middleware('throttle:10,1');
+
+    Route::post('/device-tokens/remove', [DeviceTokenController::class, 'destroy'])
+        ->middleware('throttle:10,1');
+});
